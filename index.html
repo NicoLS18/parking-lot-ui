@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Lot Parking Viewer</title>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <script type="module" src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f5f5f5; }
+    .tabs { display: flex; justify-content: center; margin: 1em 0; }
+    .tab-btn {
+      padding: 0.5em 1em;
+      margin: 0 0.25em;
+      background: #ddd;
+      border: none;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: #999; color: white; }
+    #summary, #search-section { text-align: center; margin: 1em; }
+    .lot-view {
+      display: none;
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .lot-view.active { display: block; }
+    .lot-view img {
+      width: 100%;
+      display: block;
+    }
+    .spot {
+      position: absolute;
+      width: 40px;
+      height: 20px;
+      background: rgba(0,128,0,0.6);
+      color: white;
+      text-align: center;
+      line-height: 20px;
+      font-size: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .occupied { background: rgba(255,0,0,0.7); }
+    #autocomplete-list {
+      background: white;
+      border: 1px solid #ccc;
+      position: absolute;
+      z-index: 10;
+      width: 300px;
+      margin: 0 auto;
+      max-height: 150px;
+      overflow-y: auto;
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #autocomplete-list div { padding: 5px; cursor: pointer; }
+    #autocomplete-list div:hover { background: #eee; }
+    #scanner { width: 300px; margin: 10px auto; display: none; }
+    table {
+      margin: 2em auto;
+      border-collapse: collapse;
+      width: 90%;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #999;
+      text-align: center;
+    }
+    th { background-color: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <button class="tab-btn active" data-lot="GG1">GG1 Lot</button>
+    <button class="tab-btn" data-lot="GG2">GG2 Lot</button>
+  </div>
+
+  <div id="summary">Occupied: 0 | Available: 0</div>
+
+
+
+  <div id="GG1" class="lot-view active">
+    <img src="GG1 Parking Lot.png" alt="GG1 Layout">
+<div class="spot" id="GG1-A-01" style="top:96px; left: 130px; transform: rotate(270deg);">A-01</div> 
+<div class="spot" id="GG1-A-02" style="top:96px; left: 152px; transform: rotate(270deg);">A-02</div> 
+<div class="spot" id="GG1-A-03" style="top: 96px; left: 174px; transform: rotate(270deg);">A-03</div>
+<div class="spot" id="GG1-A-04" style="top: 96px; left: 196px; transform: rotate(270deg);">A-04</div>
+<div class="spot" id="GG1-A-05" style="top: 96px; left: 218px; transform: rotate(270deg);">A-05</div>
+<div class="spot" id="GG1-A-06" style="top: 96px; left: 240px; transform: rotate(270deg);">A-06</div>
+<div class="spot" id="GG1-A-07" style="top: 96px; left: 262px; transform: rotate(270deg);">A-07</div>
+<div class="spot" id="GG1-A-08" style="top: 96px; left: 284px; transform: rotate(270deg);">A-08</div>
+<div class="spot" id="GG1-A-09" style="top: 96px; left: 306px; transform: rotate(270deg);">A-09</div>
+<div class="spot" id="GG1-A-10" style="top: 96px; left: 328px; transform: rotate(270deg);">A-10</div>
+<div class="spot" id="GG1-A-11" style="top: 96px; left: 350px; transform: rotate(270deg);">A-11</div>
+<div class="spot" id="GG1-A-12" style="top: 96px; left: 372px; transform: rotate(270deg);">A-12</div>
+<div class="spot" id="GG1-A-13" style="top: 96px; left: 394px; transform: rotate(270deg);">A-13</div>
+<div class="spot" id="GG1-A-14" style="top: 96px; left: 416px; transform: rotate(270deg);">A-14</div>
+<div class="spot" id="GG1-A-15" style="top: 96px; left: 438px; transform: rotate(270deg);">A-15</div>
+<div class="spot" id="GG1-A-16" style="top: 96px; left: 460px; transform: rotate(270deg);">A-16</div>
+<div class="spot" id="GG1-A-17" style="top: 96px; left: 482px; transform: rotate(270deg);">A-17</div>
+<div class="spot" id="GG1-A-18" style="top: 96px; left: 504px; transform: rotate(270deg);">A-18</div>
+<div class="spot" id="GG1-A-19" style="top: 96px; left: 526px; transform: rotate(270deg);">A-19</div>
+<div class="spot" id="GG1-A-20" style="top: 96px; left: 548px; transform: rotate(270deg);">A-20</div>
+<div class="spot" id="GG1-A-21" style="top: 96px; left: 570px; transform: rotate(270deg);">A-21</div>
+<div class="spot" id="GG1-A-22" style="top: 96px; left: 592px; transform: rotate(270deg);">A-22</div>
+<div class="spot" id="GG1-A-23" style="top: 96px; left: 614px; transform: rotate(270deg);">A-23</div>
+<div class="spot" id="GG1-A-24" style="top: 96px; left: 636px; transform: rotate(270deg);">A-24</div>
+<div class="spot" id="GG1-A-25" style="top: 96px; left: 658px; transform: rotate(270deg);">A-25</div>
+<div class="spot" id="GG1-A-26" style="top: 96px; left: 680px; transform: rotate(270deg);">A-26</div>
+<div class="spot" id="GG1-A-27" style="top: 96px; left: 702px; transform: rotate(270deg);">A-27</div>
+<div class="spot" id="GG1-A-28" style="top: 96px; left: 724px; transform: rotate(270deg);">A-28</div>
+<div class="spot" id="GG1-A-29" style="top: 96px; left: 746px; transform: rotate(270deg);">A-29</div>
+<div class="spot" id="GG1-A-30" style="top: 96px; left: 768px; transform: rotate(270deg);">A-30</div>
+<div class="spot" id="GG1-A-31" style="top: 96px; left: 790px; transform: rotate(270deg);">A-31</div>
+<div class="spot" id="GG1-A-32" style="top: 96px; left: 812px; transform: rotate(270deg);">A-32</div>
+<div class="spot" id="GG1-A-33" style="top: 96px; left: 834px; transform: rotate(270deg);">A-33</div>
+<div class="spot" id="GG1-A-34" style="top: 96px; left: 856px; transform: rotate(270deg);">A-34</div>
+<div class="spot" id="GG1-A-35" style="top: 96px; left: 878px; transform: rotate(270deg);">A-35</div>
+<div class="spot" id="GG1-A-36" style="top: 96px; left: 900px; transform: rotate(270deg);">A-36</div>
+<div class="spot" id="GG1-A-37" style="top: 96px; left: 922px; transform: rotate(270deg);">A-37</div>
+<div class="spot" id="GG1-A-38" style="top: 96px; left: 944px; transform: rotate(270deg);">A-38</div>
+<div class="spot" id="GG1-A-39" style="top: 96px; left: 966px; transform: rotate(270deg);">A-39</div>
+<div class="spot" id="GG1-A-40" style="top: 96px; left: 988px; transform: rotate(270deg);">A-40</div>
+<div class="spot" id="GG1-A-41" style="top: 96px; left: 1010px; transform: rotate(270deg);">A-41</div>
+<div class="spot" id="GG1-A-42" style="top: 96px; left: 1032px; transform: rotate(270deg);">A-42</div>
+<div class="spot" id="GG1-A-43" style="top: 96px; left: 1054px; transform: rotate(270deg);">A-43</div>
+<div class="spot" id="GG1-A-44" style="top: 96px; left: 1076px; transform: rotate(270deg);">A-44</div>
+<div class="spot" id="GG1-A-45" style="top: 96px; left: 1098px; transform: rotate(270deg);">A-45</div>
+
+
+
+<div class="spot" id="GG1-B-01" style="top: 170px; left: 80px;">B-01</div>
+<div class="spot" id="GG1-B-02" style="top: 193px; left: 80px;">B-02</div>
+<div class="spot" id="GG1-B-03" style="top: 215px; left: 80px;">B-03</div>
+<div class="spot" id="GG1-B-04" style="top: 237px; left: 80px;">B-04</div>
+<div class="spot" id="GG1-B-05" style="top: 259px; left: 80px;">B-05</div>
+<div class="spot" id="GG1-B-06" style="top: 281px; left: 80px;">B-06</div>
+
+<div class="spot" id="GG1-B-07" style="top: 191px; left: 160px;">B-07</div>
+<div class="spot" id="GG1-B-08" style="top: 213px; left: 160px;">B-08</div>
+<div class="spot" id="GG1-B-09" style="top: 235px; left: 160px;">B-09</div>
+<div class="spot" id="GG1-B-10" style="top: 257px; left: 160px;">B-10</div>
+<div class="spot" id="GG1-B-11" style="top: 279px; left: 160px;">B-11</div>
+<div class="spot" id="GG1-B-12" style="top: 301px; left: 160px;">B-12</div>
+
+
+<!-- Column C-->
+<div class="spot" id="GG1-C-01" style="top: 520px; left: 232px;">C-01</div>
+
+
+
+<!-- Column D starting at D-01 -->
+<div class="spot" id="GG1-D-01" style="top: 393px; left: 355px;">D-01</div>
+<div class="spot" id="GG1-D-02" style="top: 415px; left: 355px;">D-02</div>
+<div class="spot" id="GG1-D-03" style="top: 437px; left: 355px;">D-03</div>
+<div class="spot" id="GG1-D-04" style="top: 459px; left: 355px;">D-04</div>
+<div class="spot" id="GG1-D-05" style="top: 481px; left: 355px;">D-05</div>
+<div class="spot" id="GG1-D-06" style="top: 503px; left: 355px;">D-06</div>
+<div class="spot" id="GG1-D-07" style="top: 525px; left: 355px;">D-07</div>
+<div class="spot" id="GG1-D-08" style="top: 547px; left: 355px;">D-08</div>
+
+<!-- Column D starting at D-09 -->
+<div class="spot" id="GG1-D-09" style="top: 393px; left: 435px;">D-09</div>
+<div class="spot" id="GG1-D-10" style="top: 415px; left: 435px;">D-10</div>
+<div class="spot" id="GG1-D-11" style="top: 437px; left: 435px;">D-11</div>
+<div class="spot" id="GG1-D-12" style="top: 459px; left: 435px;">D-12</div>
+<div class="spot" id="GG1-D-13" style="top: 481px; left: 435px;">D-13</div>
+<div class="spot" id="GG1-D-14" style="top: 503px; left: 435px;">D-14</div>
+<div class="spot" id="GG1-D-15" style="top: 525px; left: 435px;">D-15</div>
+<div class="spot" id="GG1-D-16" style="top: 547px; left: 435px;">D-16</div>
+
+<!-- Column D starting at D-17 -->
+<div class="spot" id="GG1-D-17" style="top: 393px; left: 515px;">D-17</div>
+<div class="spot" id="GG1-D-18" style="top: 415px; left: 515px;">D-18</div>
+<div class="spot" id="GG1-D-19" style="top: 437px; left: 515px;">D-19</div>
+<div class="spot" id="GG1-D-20" style="top: 459px; left: 515px;">D-20</div>
+<div class="spot" id="GG1-D-21" style="top: 481px; left: 515px;">D-21</div>
+<div class="spot" id="GG1-D-22" style="top: 503px; left: 515px;">D-22</div>
+<div class="spot" id="GG1-D-23" style="top: 525px; left: 515px;">D-23</div>
+<div class="spot" id="GG1-D-24" style="top: 547px; left: 515px;">D-24</div>
+<div class="spot" id="GG1-D-25" style="top: 569px; left: 515px;">D-25</div>
+<div class="spot" id="GG1-D-26" style="top: 591px; left: 515px;">D-26</div>
+
+<!-- Column E starting at E-01 -->
+<div class="spot" id="GG1-E-01" style="top: 371px; left: 602px;">E-01</div>
+<div class="spot" id="GG1-E-02" style="top: 393px; left: 602px;">E-02</div>
+<div class="spot" id="GG1-E-03" style="top: 415px; left: 602px;">E-03</div>
+<div class="spot" id="GG1-E-04" style="top: 437px; left: 602px;">E-04</div>
+<div class="spot" id="GG1-E-05" style="top: 459px; left: 602px;">E-05</div>
+<div class="spot" id="GG1-E-06" style="top: 481px; left: 602px;">E-06</div>
+<div class="spot" id="GG1-E-07" style="top: 503px; left: 602px;">E-07</div>
+<div class="spot" id="GG1-E-08" style="top: 525px; left: 602px;">E-08</div>
+<div class="spot" id="GG1-E-09" style="top: 547px; left: 602px;">E-09</div>
+<div class="spot" id="GG1-E-10" style="top: 569px; left: 602px;">E-10</div>
+<div class="spot" id="GG1-E-11" style="top: 591px; left: 602px;">E-11</div>
+
+<!-- Column E starting at E-12 -->
+<div class="spot" id="GG1-E-12" style="top: 371px; left: 673px;">E-12</div>
+<div class="spot" id="GG1-E-13" style="top: 393px; left: 673px;">E-13</div>
+<div class="spot" id="GG1-E-14" style="top: 415px; left: 673px;">E-14</div>
+<div class="spot" id="GG1-E-15" style="top: 437px; left: 673px;">E-15</div>
+<div class="spot" id="GG1-E-16" style="top: 459px; left: 673px;">E-16</div>
+<div class="spot" id="GG1-E-17" style="top: 481px; left: 673px;">E-17</div>
+<div class="spot" id="GG1-E-18" style="top: 503px; left: 673px;">E-18</div>
+<div class="spot" id="GG1-E-19" style="top: 525px; left: 673px;">E-19</div>
+<div class="spot" id="GG1-E-20" style="top: 547px; left: 673px;">E-20</div>
+<div class="spot" id="GG1-E-21" style="top: 569px; left: 673px;">E-21</div>
+<div class="spot" id="GG1-E-22" style="top: 591px; left: 673px;">E-22</div>
+
+<!-- Column F starting at F-01 -->
+<div class="spot" id="GG1-F-01" style="top: 393px; left: 759px;">F-01</div>
+<div class="spot" id="GG1-F-02" style="top: 415px; left: 759px;">F-02</div>
+<div class="spot" id="GG1-F-03" style="top: 437px; left: 759px;">F-03</div>
+<div class="spot" id="GG1-F-04" style="top: 459px; left: 759px;">F-04</div>
+<div class="spot" id="GG1-F-05" style="top: 481px; left: 759px;">F-05</div>
+<div class="spot" id="GG1-F-06" style="top: 503px; left: 759px;">F-06</div>
+<div class="spot" id="GG1-F-07" style="top: 525px; left: 759px;">F-07</div>
+<div class="spot" id="GG1-F-08" style="top: 547px; left: 759px;">F-08</div>
+<div class="spot" id="GG1-F-09" style="top: 569px; left: 759px;">F-09</div>
+<div class="spot" id="GG1-F-10" style="top: 591px; left: 759px;">F-10</div>
+
+<!-- Column F starting at F-11 -->
+<div class="spot" id="GG1-F-11" style="top: 393px; left: 830px;">F-11</div>
+<div class="spot" id="GG1-F-12" style="top: 415px; left: 830px;">F-12</div>
+<div class="spot" id="GG1-F-13" style="top: 437px; left: 830px;">F-13</div>
+<div class="spot" id="GG1-F-14" style="top: 459px; left: 830px;">F-14</div>
+<div class="spot" id="GG1-F-15" style="top: 481px; left: 830px;">F-15</div>
+<div class="spot" id="GG1-F-16" style="top: 503px; left: 830px;">F-16</div>
+<div class="spot" id="GG1-F-17" style="top: 525px; left: 830px;">F-17</div>
+<div class="spot" id="GG1-F-18" style="top: 547px; left: 830px;">F-18</div>
+<div class="spot" id="GG1-F-19" style="top: 569px; left: 830px;">F-19</div>
+<div class="spot" id="GG1-F-20" style="top: 591px; left: 830px;">F-20</div>
+  </div>
+
+  <div id="GG2" class="lot-view">
+    <img src="GG2 Parking Lot 5.png" alt="GG2 Layout">
+<!-- Left column -->
+<div class="spot" id="GG2-B-16" style="top: 321px; left: 634px;">B-16</div>
+<div class="spot" id="GG2-B-13" style="top: 344px; left: 634px;">B-13</div>
+<div class="spot" id="GG2-B-10" style="top: 366px; left: 634px;">B-10</div>
+<div class="spot" id="GG2-B-07" style="top: 388px; left: 634px;">B-07</div>
+<div class="spot" id="GG2-B-04" style="top: 410px; left: 634px;">B-04</div>
+<div class="spot" id="GG2-B-01" style="top: 433px; left: 634px;">B-01</div>
+
+<!-- Middle column (84px right of 634px = 718px) -->
+<div class="spot" id="GG2-B-02" style="top: 433px; left: 718px;">B-02</div>
+<div class="spot" id="GG2-B-05" style="top: 410px; left: 718px;">B-05</div>
+<div class="spot" id="GG2-B-08" style="top: 388px; left: 718px;">B-08</div>
+<div class="spot" id="GG2-B-11" style="top: 366px; left: 718px;">B-11</div>
+<div class="spot" id="GG2-B-14" style="top: 344px; left: 718px;">B-14</div>
+<div class="spot" id="GG2-B-17" style="top: 321px; left: 718px;">B-17</div>
+
+<!-- Right column (84px right of 718px = 802px) -->
+<div class="spot" id="GG2-B-03" style="top: 433px; left: 802px;">B-03</div>
+<div class="spot" id="GG2-B-06" style="top: 410px; left: 802px;">B-06</div>
+<div class="spot" id="GG2-B-09" style="top: 388px; left: 802px;">B-09</div>
+<div class="spot" id="GG2-B-12" style="top: 366px; left: 802px;">B-12</div>
+<div class="spot" id="GG2-B-15" style="top: 344px; left: 802px;">B-15</div>
+
+
+
+
+    <!-- Top Row: E-01 to E-05 -->
+<div class="spot" id="GG2-E-01" style="top: 85px; left: 367px;">E-01</div>
+<div class="spot" id="GG2-E-02" style="top: 85px; left: 448px;">E-02</div>
+<div class="spot" id="GG2-E-03" style="top: 85px; left: 529px;">E-03</div>
+<div class="spot" id="GG2-E-04" style="top: 85px; left: 610px;">E-04</div>
+<div class="spot" id="GG2-E-05" style="top: 85px; left: 691px;">E-05</div>
+
+<!-- Bottom Row: E-06 to E-10 -->
+<div class="spot" id="GG2-E-06" style="top: 63px; left: 367px;">E-06</div>
+<div class="spot" id="GG2-E-07" style="top: 63px; left: 448px;">E-07</div>
+<div class="spot" id="GG2-E-08" style="top: 63px; left: 529px;">E-08</div>
+<div class="spot" id="GG2-E-09" style="top: 63px; left: 610px;">E-09</div>
+<div class="spot" id="GG2-E-10" style="top: 63px; left: 691px;">E-10</div>
+
+
+<div class="spot" id="GG2-C-16" style="top: 153px; left: 629px; transform: rotate(90deg);">C-16</div>
+<div class="spot" id="GG2-C-15" style="top: 153px; left: 651px; transform: rotate(90deg);">C-15</div>
+<div class="spot" id="GG2-C-14" style="top: 153px; left: 674px; transform: rotate(90deg);">C-14</div>
+<div class="spot" id="GG2-C-13" style="top: 153px; left: 696px; transform: rotate(90deg);">C-13</div>
+<div class="spot" id="GG2-C-12" style="top: 153px; left: 718px; transform: rotate(90deg);">C-12</div>
+<div class="spot" id="GG2-C-11" style="top: 153px; left: 740px; transform: rotate(90deg);">C-11</div>
+
+<div class="spot" id="GG2-C-09" style="top: 202.5px; left: 662px;">C-09</div>
+<div class="spot" id="GG2-C-10" style="top: 202.5px; left: 713px;">C-10</div>
+
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 628.5px; transform: rotate(90deg);">C-08</div>
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 651px; transform: rotate(90deg);">C-07</div>
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 674px; transform: rotate(90deg);">C-06</div>
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 696px; transform: rotate(90deg);">C-05</div>
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 719px; transform: rotate(90deg);">C-04</div>
+<div class="spot" id="GG2-C-03" style="top: 248px; left: 742px; transform: rotate(90deg);">C-03</div>
+
+<div class="spot" id="GG2-C-01" style="top: 286px; left: 661px;">C-01</div>
+<div class="spot" id="GG2-C-02" style="top: 286px; left: 710px;">C-02</div>
+
+
+
+<div class="spot" id="GG2-D-01" style="top: 256.5px; left: 807px;">D-01</div>
+<div class="spot" id="GG2-D-02" style="top: 234.5px; left: 807px;">D-02</div>
+
+<div class="spot" id="GG2-D-03" style="top: 163px; left: 807px;">D-03</div>
+<div class="spot" id="GG2-D-04" style="top: 141px; left: 807px;">D-04</div>
+
+<div class="spot" id="GG2-D-05" style="top: 82px; left: 833px;">D-05</div>
+<div class="spot" id="GG2-D-06" style="top: 60px; left: 833px;">D-06</div>
+
+<div class="spot" id="GG2-D-07" style="top: 82px; left: 909px;">D-05</div>
+<div class="spot" id="GG2-D-08" style="top: 60px; left: 909px;">D-06</div>
+
+<div class="spot" id="GG2-A-04" style="top: 502px; left: 728px; transform: rotate(307deg);">A-04</div>
+<div class="spot" id="GG2-A-03" style="top: 502px; left: 690px; transform: rotate(307deg);">A-03</div>
+<div class="spot" id="GG2-A-02" style="top: 502px; left: 653px; transform: rotate(307deg);">A-02</div>
+<div class="spot" id="GG2-A-01" style="top: 501px; left: 613px; transform: rotate(307deg);">A-01</div>
+  </div>
+
+    <div id="search-section">
+    <input type="text" id="search-vin" placeholder="Search VIN" style="width: 300px;">
+    <button id="scan-vin-btn">📷 Scan VIN</button>
+    <div id="autocomplete-list"></div>
+    <div id="scanner"></div>
+  </div>
+<br>
+ <hr />
+
+<br>
+
+  <h2 style="text-align:center;">Current VIN Assignments</h2>
+  <table id="vin-table">
+    <thead>
+      <tr>
+        <th>Lot</th>
+        <th>Spot ID</th>
+        <th>VIN</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody id="vin-table-body"></tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, getDoc, setDoc, deleteDoc, doc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkm-POkijRQ1uelpSTK7LTPa0U251CAJ4",
+  authDomain: "two-tab-lot.firebaseapp.com",
+  projectId: "two-tab-lot",
+  storageBucket: "two-tab-lot.firebasestorage.app",
+  messagingSenderId: "244126304424",
+  appId: "1:244126304424:web:b85a90b31afa0f72931a9d"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentLotId = 'GG1';
+    const summaryEl = document.getElementById('summary');
+    const searchInput = document.getElementById('search-vin');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    const scannerEl = document.getElementById('scanner');
+    const vinTableBody = document.getElementById('vin-table-body');
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelector('.tab-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        currentLotId = btn.dataset.lot;
+
+        document.querySelectorAll('.lot-view').forEach(view => view.classList.remove('active'));
+        document.getElementById(currentLotId).classList.add('active');
+
+        loadSpots(currentLotId);
+      });
+    });
+
+    function updateSummary(occupiedCount, total) {
+      summaryEl.textContent = `Occupied: ${occupiedCount} | Available: ${total - occupiedCount}`;
+    }
+
+    function updateTable(lotId, snapshot) {
+      vinTableBody.innerHTML = '';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (!data.vin) return;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${lotId}</td>
+          <td>${doc.id}</td>
+          <td>${data.vin}</td>
+          <td>${data.updatedAt || ''}</td>
+        `;
+        vinTableBody.appendChild(row);
+      });
+    }
+
+    function attachClickListenersOnce() {
+  const spots = document.querySelectorAll('.spot');
+
+  spots.forEach(spot => {
+    // Remove any existing click handlers to prevent duplicates
+    spot.replaceWith(spot.cloneNode(true));
+  });
+
+  const freshSpots = document.querySelectorAll('.spot');
+
+  freshSpots.forEach(spot => {
+    const spotId = spot.id;
+    const label = spot.dataset.label || spot.innerText;
+    spot.dataset.label = label;
+
+spot.addEventListener('click', async () => {
+  try {
+    const lotId = spotId.split('-')[0];
+    const docRef = doc(db, "parkingLots", lotId, "parkingSpots", spotId);
+    
+    console.log("Fetching VIN from:", `parkingLots/${lotId}/parkingSpots/${spotId}`);
+
+    const docSnap = await getDoc(docRef);
+    const currentVIN = docSnap.exists() ? docSnap.data().vin || '' : '';
+
+    const newVIN = prompt(`Enter VIN for spot ${label} (Current: ${currentVIN || 'None'})`, currentVIN);
+
+    if (newVIN && newVIN.trim() !== '') {
+      await setDoc(docRef, {
+        vin: newVIN.trim(),
+        updatedAt: new Date().toISOString()
+      });
+      console.log("✅ VIN saved:", newVIN.trim());
+    } else if (currentVIN) {
+      const confirmDelete = confirm("Clear this VIN from the spot?");
+      if (confirmDelete) {
+        await deleteDoc(docRef);
+        console.log("🗑️ VIN deleted from:", `parkingLots/${lotId}/parkingSpots/${spotId}`);
+      }
+    } else {
+      console.log("ℹ️ No VIN entered or deleted.");
+    }
+  } catch (error) {
+    console.error("🔥 Error saving or deleting VIN:", error);
+  }
+});
+
+  });
+}
+
+
+
+   function loadSpots(lotId) {
+  const spotsRef = collection(db, 'parkingLots', lotId, 'parkingSpots');
+  onSnapshot(spotsRef, snapshot => {
+    let occupied = 0;
+  updateTable(lotId, snapshot)
+    snapshot.forEach(docSnap => {
+      const spotId = docSnap.id;
+      const data = docSnap.data();
+      const vin = data.vin?.trim();
+      const el = document.getElementById(spotId);
+      if (!el) return;
+
+      const label = el.dataset.label || el.innerText;
+      el.dataset.label = label;
+
+      el.innerText = label; // Reset to default label
+      el.classList.remove('occupied'); // Clear previous red
+
+      if (vin) {
+        el.classList.add('occupied');
+        occupied++;
+      }
+    });
+
+    const total = document.querySelectorAll(`#${lotId} .spot`).length;
+    updateSummary(occupied, total);
+
+    attachClickListenersOnce(); // Rebind after updates
+  });
+}
+
+
+
+
+    loadSpots(currentLotId);
+
+
+const searchResult = document.createElement('div');
+searchResult.id = 'search-result';
+searchResult.style.marginTop = '10px';
+searchResult.style.fontWeight = 'bold';
+document.getElementById('search-section').appendChild(searchResult);
+
+let vinMap = {}; // VIN -> { spotId, lotId }
+
+async function fetchVINs() {
+  vinMap = {};
+  const lots = ['GG1', 'GG2'];
+  for (const lotId of lots) {
+    const snapshot = await getDocs(collection(db, "parkingLots", lotId, "parkingSpots"));
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.vin) {
+        vinMap[data.vin.toUpperCase()] = { spotId: doc.id, lotId };
+      }
+    });
+  }
+}
+
+searchInput.addEventListener("input", () => {
+  const val = searchInput.value.trim().toUpperCase();
+  autocompleteList.innerHTML = '';
+  if (!val || val.length < 2) return;
+
+  Object.keys(vinMap)
+    .filter(vin => vin.includes(val))
+    .slice(0, 10)
+    .forEach(match => {
+      const option = document.createElement("div");
+      option.textContent = match;
+      option.style.padding = "6px";
+      option.style.cursor = "pointer";
+      option.addEventListener("click", () => {
+        searchInput.value = match;
+        autocompleteList.innerHTML = '';
+        handleVINSelect(match);
+        attachClickListenersOnce();
+
+      });
+      autocompleteList.appendChild(option);
+    });
+});
+
+document.addEventListener("click", (e) => {
+  if (!autocompleteList.contains(e.target) && e.target !== searchInput) {
+    autocompleteList.innerHTML = '';
+  }
+});
+
+function handleVINSelect(vin) {
+  const match = vinMap[vin.toUpperCase()];
+  if (!match) {
+    searchResult.textContent = "❌ VIN not found in any spot.";
+    return;
+  }
+
+  const { spotId, lotId } = match;
+  searchResult.textContent = `✅ VIN found in lot ${lotId}, spot: ${spotId}`;
+
+  // Switch tab if necessary
+  if (lotId !== currentLotId) {
+    document.querySelector('.tab-btn.active').classList.remove('active');
+    document.querySelector(`.tab-btn[data-lot="${lotId}"]`).classList.add('active');
+    document.querySelectorAll('.lot-view').forEach(view => view.classList.remove('active'));
+    document.getElementById(lotId).classList.add('active');
+    currentLotId = lotId;
+  }
+
+  const spotEl = document.getElementById(spotId);
+  if (spotEl) {
+    spotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    spotEl.style.outline = "3px solid gold";
+    setTimeout(() => spotEl.style.outline = "", 2000);
+  }
+}
+
+fetchVINs();
+
+
+  </script>
+</body>
+</html>
