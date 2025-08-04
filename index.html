@@ -81,6 +81,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-lot="GG1">GG1 Lot</button>
     <button class="tab-btn" data-lot="GG2">GG2 Lot</button>
+    <button class="tab-btn" data-lot="GARDENA">Gardena Lot</button>
   </div>
 
   <div id="summary">Occupied: 0 | Available: 0</div>
@@ -323,6 +324,21 @@
 <div class="spot" id="GG2-A-01" style="top: 501px; left: 613px; transform: rotate(307deg);">A-01</div>
   </div>
 
+  
+<div id="GN1" class="lot-view">
+  <img src="GARDENA Parking Lot.png" alt="Gardena Layout">
+
+  <div class="spot" id="GN1-A-01" style="top:100px; left:150px;">A-01</div>
+  <div class="spot" id="GN1-A-02" style="top:100px; left:180px;">A-02</div>
+
+
+  <div class="spot" id="GN1-B-01" style="top:100px; left:250px;">A-01</div>
+
+  
+</div>
+  
+
+
     <div id="search-section">
     <input type="text" id="search-vin" placeholder="Search VIN" style="width: 300px;">
     <button id="scan-vin-btn">📷 Scan VIN</button>
@@ -505,7 +521,7 @@ let vinMap = {}; // VIN -> { spotId, lotId }
 
 async function fetchVINs() {
   vinMap = {};
-  const lots = ['GG1', 'GG2'];
+  const lots = ['GG1', 'GG2', 'GN1'];
   for (const lotId of lots) {
     const snapshot = await getDocs(collection(db, "parkingLots", lotId, "parkingSpots"));
     snapshot.forEach(doc => {
