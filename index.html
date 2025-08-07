@@ -566,11 +566,12 @@ spot.addEventListener('click', async () => {
 
 
 
-   function loadSpots(lotId) {
+function loadSpots(lotId) {
   const spotsRef = collection(db, 'parkingLots', lotId, 'parkingSpots');
   onSnapshot(spotsRef, snapshot => {
     let occupied = 0;
-  updateTable(lotId, snapshot)
+    updateTable(lotId, snapshot);
+
     snapshot.forEach(docSnap => {
       const spotId = docSnap.id;
       const data = docSnap.data();
@@ -578,15 +579,27 @@ spot.addEventListener('click', async () => {
       const el = document.getElementById(spotId);
       if (!el) return;
 
+      // Store the original label if not already stored
       const label = el.dataset.label || el.innerText;
       el.dataset.label = label;
 
-      el.innerText = label; // Reset to default label
-      el.classList.remove('occupied'); // Clear previous red
+      // Default: reset label and remove "occupied"
+      el.innerText = label;
+      el.classList.remove('occupied');
 
       if (vin) {
+        // Mark as occupied
         el.classList.add('occupied');
         occupied++;
+
+        // Get last 4 characters of VIN, padded with 0s
+        let last4 = vin.slice(-4);
+        if (last4.length < 4) {
+          last4 = last4.padStart(4, '0');
+        }
+
+        // Replace label with VIN ending
+        el.innerText = last4;
       }
     });
 
